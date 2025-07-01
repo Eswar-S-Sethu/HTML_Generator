@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolStack CSV Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .navbar-light {
+      background-color: #121317 !important;
+    }
+    .navbar-light .navbar-brand {
+      color: #f1f1f1;
+    }
+    .custom-navbar {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+      min-height: 80px;
+    }
+    .custom-navbar .navbar-brand {
+      font-size: 1.6rem;
+    }
+    .custom-navbar input.form-control {
+      height: 48px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-dark text-light">
+<nav class="navbar navbar-expand-lg navbar-light custom-navbar border-bottom mb-5">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a class="navbar-brand fw-bold me-auto" href="index.html">ToolStack</a>
+  </div>
+</nav>
+
+  <div class="container py-5">
+    <h1 class="text-center mb-4">Bulk Converter</h1>
+    <p class="text-white-50 mb-4">
+    Bulk Conversions are here! Upload a CSV file, select the columns and conversion unit to begin.<br>
+  </p>
+    <p class="small">Note: This is still under development and there will be changes to functionality, UI, and UX soon.</p>
+
+    <div class="container py-3">
+  <div class="row g-3 align-items-end">
+
+    <!-- From Dropdown -->
+    <div class="col-md-6">
+        <label for="fromUnit" class="form-label">From</label>
+        <select class="form-select" id="fromUnit">
+          <option selected disabled>Select unit</option>
+          <option value="kg">Kilogram</option>
+          <option value="lbs">Pound</option>
+          <option value="g">Gram</option>
+          <!-- Add more units here -->
+        </select>
+      </div>
+
+      <!-- To Dropdown -->
+      <div class="col-md-6">
+        <label for="toUnit" class="form-label">To</label>
+        <select class="form-select" id="toUnit">
+          <option selected disabled>Select unit</option>
+          <option value="kg">Kilogram</option>
+          <option value="lbs">Pound</option>
+          <option value="g">Gram</option>
+          <!-- Add more units here -->
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+    <input type="file" id="csvInput" accept=".csv" class="form-control mb-3" />
+    <div class="form-check form-switch">
+      <label class="form-check-label" for="wholeNumberToggle">Whole Number Output</label>
+      <input class="form-check-input" type="checkbox" role="switch" id="wholeNumberToggle">
+    </div>
+    <div class="form-check form-switch">
+      <label class="form-check-label" for="roundOffToggle">Round Off Output</label>
+      <input class="form-check-input" type="checkbox" role="switch" id="roundOffToggle">
+    </div>
+    <br>
+    <div id="columnSelect" class="mb-3"></div>
+    <button class="btn btn-primary mb-4" id="convertBtn">Convert</button>
+    <button class="btn btn-secondary mb-4" id="undoBtn" disabled>Undo</button>
+    <div class="table-responsive">
+      <table class="table table-bordered table-dark" id="previewTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-success mt-3" id="downloadBtn">Download Converted CSV</button>
+  </div>
+
+<!-- Footer -->
+  <footer class="bg-dark text-light pt-4 mt-0">
+  <div class="container">
+    <div class="row text-center text-md-start">
+      <!-- About -->
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">ToolStack</h5>
+        <p class="small">Serverless by Design. No Fluff. No BS. Built for real users, by an indie dev, using Rust and WebAssembly.</p>
+      </div>
+
+      <!-- Useful Links -->
+      <div class="col-md-4 mb-3">
+        <h6 class="fw-bold">Useful Links</h6>
+        <ul class="list-unstyled">
+          <li><a href="index.html" class="text-light text-decoration-none">Home</a></li>
+          <li><a href="privacy_policy.html" class="text-light text-decoration-none">Privacy Policy</a></li>
+          <li><a href="terms_of_use.html" class="text-light text-decoration-none">Terms of Use</a></li>
+          <li><a href="contact_developer.html" class="text-light text-decoration-none">About Developer</a></li>
+        </ul>
+      </div>
+
+      <!-- Social / Extras -->
+      <div class="col-md-4 mb-3">
+        <h6 class="fw-bold">Connect</h6>
+        <ul class="list-unstyled">
+          <li><a href="https://x.com/eswar_sethu" class="text-light text-decoration-none">X</a></li>
+          <li><a href="https://github.com/Eswar-S-Sethu" class="text-light text-decoration-none">Github</a></li>
+          <li><a href="mailto:dev@toolstack.com.au" class="text-light text-decoration-none">Email</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="bg-secondary" />
+
+    <div class="text-center small pb-3">
+      &copy; 2025 <strong>ToolStack</strong>. Born in Melbourne. Built for the world. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script type="module">
+    let originalData = [];
+    let undoData=[];
+    let selectedColumns = [];
+    let wholeNumber;
+    let roundOff;
+    import init, { convert_columns } from "./UnitConverter.js";
+
+    let wasmModule;
+
+    async function run_now() {
+      await init();
+      wasmModule = { convert_columns }; // set after init
+    }
+
+    run_now();
+
+    document.getElementById("convertBtn").addEventListener("click", convertSelected);
+    document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
+    document.getElementById("undoBtn").addEventListener("click", undoChanges);
+
+    document.getElementById("csvInput").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: false,
+        complete: function (results) {
+          originalData = results.data.slice(0, 10);
+          undoData=JSON.parse(JSON.stringify(originalData));
+          displayTable(originalData);
+          showColumnSelectors(Object.keys(originalData[0]));
+        }
+      });
+    });
+
+    function displayTable(data) {
+      document.getElementById("undoBtn").disabled=false;
+
+      const head = document.getElementById("tableHead");
+      const body = document.getElementById("tableBody");
+      head.innerHTML = "";
+      body.innerHTML = "";
+
+      if (data.length === 0) return;
+
+      const headers = Object.keys(data[0]);
+      head.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`;
+
+      data.forEach(row => {
+        const rowHTML = headers.map(h => `<td>${row[h]}</td>`).join("");
+        body.innerHTML += `<tr>${rowHTML}</tr>`;
+      });
+    }
+
+    function undoChanges(){
+    displayTable(undoData);
+    }
+
+    function showColumnSelectors(columns) {
+      const selectDiv = document.getElementById("columnSelect");
+      selectDiv.innerHTML = '<label for="column">Select columns to convert:</label><br/>';
+
+      columns.forEach(col => {
+        selectDiv.innerHTML += `
+          <label>
+            <input type="checkbox" name="column" value="${col}" /> ${col}
+          </label><br/>
+        `;
+      });
+    }
+
+  async function convertSelected() {
+    wholeNumber=document.getElementById("wholeNumberToggle").checked;
+    roundOff=document.getElementById("roundOffToggle").checked;
+    const checkboxes = document.querySelectorAll('input[name="column"]:checked');
+    selectedColumns = Array.from(checkboxes).map(cb => cb.value);
+
+    if (!wasmModule || !wasmModule.convert_columns) {
+      console.error("WASM not loaded or function missing.");
+      return;
+    }
+
+    const fromUnit = document.getElementById("fromUnit");
+    const toUnit = document.getElementById("toUnit");
+
+    const selectedData = originalData.map(row => {
+      return selectedColumns.map(col => row[col]);
+    });
+
+    try {
+      const convertedJson = wasmModule.convert_columns(JSON.stringify(selectedData), fromUnit.value, toUnit.value, wholeNumber, roundOff);
+      const converted = JSON.parse(convertedJson);
+
+      converted.forEach((row, i) => {
+        row.forEach((val, j) => {
+          const col = selectedColumns[j];
+          originalData[i][col] = val;
+        });
+      });
+
+      displayTable(originalData);
+    } catch (err) {
+      console.error("Conversion failed:", err);
+      alert("⚠️ Conversion failed. Check WASM integration.");
+    }
+  }
+
+
+  function downloadCSV() {
+    const csv = Papa.unparse(originalData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "converted.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

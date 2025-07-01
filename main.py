@@ -153,7 +153,18 @@ html_template = """<!DOCTYPE html>
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toolstack.com.au/{slug}">
-    <meta property="og:image" content="https://toolstack.com.au/assets/cover.png">
+    <meta property="og:image" content="https://toolstack.com.au/android-chrome-512x512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://toolstack.com.au/android-chrome-512x512.png">
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Apple touch icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <!-- PNG versions -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <!-- Web manifest -->
+    <link rel="manifest" href="/site.webmanifest">    
     
     <title>{title}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -176,14 +187,26 @@ html_template = """<!DOCTYPE html>
             }};
         }}
         run();
+        
+        
     </script>
 </head>
-<body class="bg-light text-dark">
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="index.html">ToolStack</a>
-    </div>
+<body class="bg-dark text-white">
+<nav class="navbar navbar-expand-lg navbar-light custom-navbar border-bottom mb-5">
+  <div class="container d-flex justify-content-between align-items-center">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold me-auto" href="index.html">ToolStack</a>
+  </div>
 </nav>
+
+<!-- Search section below navbar -->
+<div class="search-wrapper position-relative my-3 w-100 d-flex justify-content-center">
+  <div class="w-50 position-relative">
+    <input class="form-control rounded-pill px-4" type="search" placeholder="Search conversions" aria-label="Search" id="searchInput">
+    <div class="result-list position-absolute w-100" id="results"></div>
+  </div>
+</div>
+<br><br>
 <div class="container">
     <div class="row">
         <div class="col-md-8 mx-auto text-center">
@@ -209,25 +232,19 @@ html_template = """<!DOCTYPE html>
             <button class="btn btn-outline-primary" onclick="downloadHistory()">Download History</button>
         </div>
     </div>
+    <hr>
 </div>
 
-<!-- Popular Conversions -->
-  <section class="container py-5 text-center">
-    <h2>Popular Conversions</h2>
-    <div class="row justify-content-center mt-4">
-      <div class="col-md-3"><a href="lbs_to_kg.html" class="btn w-100 mb-3">lbs → kg</a></div>
-      <div class="col-md-3"><a href="kg_to_lbs.html" class="btn w-100 mb-3">kg → lbs</a></div>
-      <div class="col-md-3"><a href="cm_to_in.html" class="btn w-100 mb-3">cm → inch</a></div>
-      <div class="col-md-3"><a href="c_to_f.html" class="btn w-100 mb-3">Celsius → Fahrenheit</a></div>
-    </div>
-  </section>
+<!-- Bulk Conversion -->
+<section class="container text-center my-5 rounded-4 px-3 py-5" style="background-color: #0B0C1D;">
+  <h2 class="mb-3 text-white">🎉 Bulk Conversions</h2>
+  <p class="text-white-50 mb-4">
+    Bulk Conversions are here! Upload a CSV file and convert thousands of values at once.<br>
+  </p>
+    <button id="comingSoonBtn" class="btn btn-outline-light rounded-pill px-4 py-2" onclick=window.open('bulk_converter.html','_blank')>Try Now</button>
+</section>
 
 
-<!-- About Section -->
-  <section class="container py-5 text-center">
-    <h2>About ToolStack</h2>
-    <p>One toolset created to cater all conversion needs of everyday users.</p>
-  </section>
 
 <!-- Footer -->
   <footer class="bg-dark text-light pt-4 mt-5">
@@ -254,7 +271,7 @@ html_template = """<!DOCTYPE html>
       <div class="col-md-4 mb-3">
         <h6 class="fw-bold">Connect</h6>
         <ul class="list-unstyled">
-          <li><a href="https://x.com/eswar_sethu" class="text-light text-decoration-none">Twitter</a></li>
+          <li><a href="https://x.com/eswar_sethu" class="text-light text-decoration-none">X</a></li>
           <li><a href="https://github.com/Eswar-S-Sethu" class="text-light text-decoration-none">Github</a></li>
           <li><a href="mailto:dev@toolstack.com.au" class="text-light text-decoration-none">Email</a></li>
         </ul>
@@ -311,6 +328,88 @@ function toggleTheme() {{
     document.documentElement.setAttribute('data-theme', savedTheme);
     document.body.className = savedTheme === 'dark' ? 'bg-dark text-light' : 'bg-light text-dark';
 }})();
+
+    const converters = [
+      {{ title: 'Pounds to Kilograms', file: 'lbs_to_kg.html', tags: 'lbs to kg pounds kilograms' }},
+      {{ title: 'Kilograms to Pounds', file: 'kg_to_lbs.html', tags: 'kg to lbs kilograms pounds' }},
+      {{ title: 'Centimeters to Inches', file: 'cm_to_in.html', tags: 'cm to in centimeters inches' }},
+      {{ title: 'Inches to Centimeters', file: 'in_to_cm.html', tags: 'in to cm inches centimeters' }},
+      {{ title: 'Meters to Kilometers', file: 'm_to_km.html', tags: 'm to km meters kilometers' }},
+      {{ title: 'Kilometers to Meters', file: 'km_to_m.html', tags: 'km to m kilometers meters' }},
+      {{ title: 'Celsius to Fahrenheit', file: 'c_to_f.html', tags: 'c to f celsius fahrenheit' }},
+      {{ title: 'Fahrenheit to Celsius', file: 'f_to_c.html', tags: 'f to c fahrenheit celsius' }},
+      {{ title: 'Celsius to Kelvin', file: 'c_to_k.html', tags: 'c to k celsius kelvin' }},
+      {{ title: 'Kelvin to Celsius', file: 'k_to_c.html', tags: 'k to c kelvin celsius' }},
+      {{ title: 'km/h to mph', file: 'kmh_to_mph.html', tags: 'kmh to mph kilometers per hour miles per hour' }},
+      {{ title: 'mph to km/h', file: 'mph_to_kmh.html', tags: 'mph to kmh miles per hour kilometers per hour' }},
+      {{ title: 'sqm to sqft', file: 'sqm_to_sqft.html', tags: 'sqm to sqft square meter square feet' }},
+      {{ title: 'sqft to sqm', file: 'sqft_to_sqm.html', tags: 'sqft to sqm square feet square meter' }},
+      {{ title: 'Litre to Gallon', file: 'l_to_gal.html', tags: 'ltr to gal litre gallon' }},
+      {{ title: 'Gallon to Litre', file: 'gal_to_l.html', tags: 'gal to ltr gallon litre' }},
+      {{ title: 'Hours to Minutes', file: 'hrs_to_min.html', tags: 'hrs to min hours to minutes' }},
+      {{ title: 'Minutes to Seconds', file: 'min_to_sec.html', tags: 'min to sec minutes to seconds' }},
+      {{ title: 'Pascal to PSI', file: 'pa_to_psi.html', tags: 'pa to psi' }},
+      {{ title: 'PSI to Pascal', file: 'psi_to_pa.html', tags: 'psi to pa' }},
+      {{ title: 'Joules to Calories', file: 'j_to_cal.html', tags: 'j to cal joule to calories' }},
+      {{ title: 'Calories to Joules', file: 'cal_to_j.html', tags: 'cal to j calories to joule' }},
+      {{ title: 'Watt to Kilowatt', file: 'w_to_kw.html', tags: 'w to kw watt to kilowatt' }},
+      {{ title: 'Kilowatt to Watt', file: 'kw_to_w.html', tags: 'kw to w kilowatt to watt' }},
+      {{ title: 'Kilobytes to Megabytes', file: 'kb_to_mb.html', tags: 'kb to mb KB to MB Kilobytes Megabytes' }},
+      {{ title: 'Megabytes to Gigabytes', file: 'mb_to_gb.html', tags: 'mb to gb MB to GB Megabytes Gigabytes' }},
+      {{ title: 'Gigabytes to Terabytes', file: 'gb_to_tb.html', tags: 'gb to tb GB to TB Gigabytes Terabytes' }},
+      {{ title: 'US ring size to EU ring size', file: 'us_to_eu_ring.html', tags: 'US ring size to EU ring size ' }},
+      {{ title: 'EU ring size to US ring size', file: 'eu_to_us_ring.html', tags: 'EU ring size to US ring size' }},
+      {{ title: 'US shoe size to EU shoe size', file: 'us_shoe_to_eu.html', tags: 'US shoe size to EU shoe size' }},
+      {{ title: 'EU shoe size to US shoe size', file: 'eu_shoe_to_us.html', tags: 'EU shoe size to US shoe size' }},
+      {{ title: 'US cloth size to EU cloth size', file: 'us_to_eu_clothing.html', tags: 'US cloth size to Euro cloth size' }},
+      {{ title: 'EU cloth size to US cloth size', file: 'eu_to_us_clothing.html', tags: 'Euro cloth size to US cloth size' }},
+      {{ title: 'Teaspoon to Tablespoon', file: 'tsp_to_tbsp.html', tags: 'teaspoon to tablespoon teaspoon tablespoon' }},
+      {{ title: 'Tablespoon to Teaspoon', file: 'tbsp_to_tsp.html', tags: 'tablespoon to teaspoon tablespoon teaspoon' }},
+      {{ title: 'Cup to Millilitre', file: 'cup_to_ml.html', tags: 'cup to ml cup millilitres' }},
+      {{ title: 'Millilitre to Cup', file: 'ml_to_cup.html', tags: 'ml to cup millilitres cup' }},
+      {{ title: 'Oz to Grams', file: 'oz_to_grams.html', tags: 'oz to grams' }},
+      {{ title: 'Grams to Oz', file: 'grams_to_oz.html', tags: 'grams to oz' }},
+      {{ title: 'Steps to kilometres', file: 'steps_to_km.html', tags: 'steps to km steps kilometers' }},
+      {{ title: 'Kilometres to Steps', file: 'km_to_steps.html', tags: 'km to steps kilometers steps' }},
+      {{ title: 'Newton to Pound Force', file: 'newtons_to_pounds_force.html', tags: 'newtons to pounds force' }},
+      {{ title: 'Pound Force to Newton', file: 'pounds_force_to_newtons.html', tags: 'pounds force to newtons' }},
+      {{ title: 'WPM to CPM', file: 'wpm_to_cpm.html', tags: 'wpm to cpm word per minute character per minute' }},
+      {{ title: 'CPM to WPM', file: 'cpm_to_wpm.html', tags: 'cpm to wpm character per minute word per minute' }},
+      {{ title: 'Percent to GPA', file: 'percent_to_gpa.html', tags: 'percent to gpa percentage gpa' }},
+      {{ title: 'GPA to Percent', file: 'gpa_to_percent.html', tags: 'gpa to percent gpa percentage' }},
+
+
+    ];
+
+
+    document.getElementById('searchInput').addEventListener('input', function () {{
+      const query = this.value.toLowerCase();
+      const resultDiv = document.getElementById('results');
+      resultDiv.innerHTML = '';
+
+      if (query.length === 0) {{
+        resultDiv.style.display = 'none';
+        return;
+      }}
+
+      const matches = converters.filter(c => c.tags.includes(query));
+      if (matches.length > 0) {{
+        resultDiv.style.display = 'block';
+        matches.forEach(c => {{
+          const a = document.createElement('a');
+          a.href = c.file;
+          a.textContent = c.title;
+          resultDiv.appendChild(a);
+        }});
+      }} else if (query.length > 2) {{
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<p class="text-muted">No matches found.</p>';
+      }} else {{
+        resultDiv.style.display = 'none';
+      }}
+    }});
+
+
 </script>
 </body>
 </html>
@@ -341,4 +440,3 @@ for func, from_unit, to_unit, label in conversions:
 print("✅ Pages generated in:", output_dir)
 
 # generates a new sitemap. make sure to update the converter data list before running
-sitemap_generator()

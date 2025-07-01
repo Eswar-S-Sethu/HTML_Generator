@@ -1,0 +1,16 @@
+{
+  "name": "UnitConverter",
+  "type": "module",
+  "description": "A library created to do unit conversions. After converting to wasm, this will later be built into an API.",
+  "version": "0.1.0",
+  "files": [
+    "UnitConverter_bg.wasm",
+    "UnitConverter.js",
+    "UnitConverter.d.ts"
+  ],
+  "main": "UnitConverter.js",
+  "types": "UnitConverter.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
