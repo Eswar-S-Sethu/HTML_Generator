@@ -241,7 +241,7 @@ html_template = """<!DOCTYPE html>
   <p class="text-white-50 mb-4">
     Bulk Conversions are here! Upload a CSV file and convert thousands of values at once.<br>
   </p>
-    <button id="comingSoonBtn" class="btn btn-outline-light rounded-pill px-4 py-2" onclick=window.open('bulk_converter.html','_blank')>Try Now</button>
+    <button id="comingSoonBtn" class="btn btn-outline-light rounded-pill px-4 py-2" onclick=window.open('bulk_converter.html','_self')>Try Now</button>
 </section>
 
 
