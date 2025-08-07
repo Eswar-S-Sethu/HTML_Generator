@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSON Validator | ToolStack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0e0f13;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .hero {
+      text-align: center;
+      padding: 80px 20px 40px;
+      background: linear-gradient(135deg, #0B0C1D 0%, #1a1c22 100%);
+    }
+    .toolbox {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 30px 0 20px;
+    }
+    .output-container {
+      background: #1c1e26;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 10px;
+      overflow-y: auto;
+      max-height: 60vh;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #00c6ff;
+    }
+    .error {
+      color: #ff6b6b;
+      font-weight: 500;
+      padding-top: 10px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .toggle-btn {
+      background-color: transparent;
+      border: 1px solid #00c6ff;
+      color: #00c6ff;
+      border-radius: 50px;
+      padding: 6px 20px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1 class="display-4 text-white">JSON Validator</h1>
+    <p class="lead text-white-50">Validate, format, and beautify your JSON effortlessly.</p>
+    <label for="fileInput" class="btn btn-outline-light rounded-pill px-4 py-2">Open .JSON File</label>
+    <input type="file" id="fileInput" accept=".json">
+  </section>
+
+  <div class="container py-4">
+    <div class="toolbox">
+      <button class="btn btn-outline-light rounded-pill px-4" onclick="validateJson()">Validate</button>
+      <button class="btn btn-outline-light rounded-pill px-4" onclick="prettifyJson()">Prettify</button>
+      <button class="btn btn-outline-light rounded-pill px-4" onclick="minifyJson()">Minify</button>
+      <button class="btn btn-outline-light rounded-pill px-4" onclick="copyJson()">Copy</button>
+      <button class="btn btn-outline-light rounded-pill px-4" onclick="clearOutput()">Clear</button>
+      <button class="toggle-btn" onclick="toggleRawView()">Toggle Raw/Formatted</button>
+    </div>
+
+    <div id="fileName" class="text-warning fw-bold text-center mb-2"></div>
+    <div id="output" class="output-container"></div>
+    <div id="error" class="error text-center"></div>
+  </div>
+
+  <script type="module">
+  import init, { validate_json, prettify_json, minify_json } from './UnitConverter.js';
+
+  let rawJson = '';
+  let isRawView = true;
+  let wasmReady = false;
+
+  const fileInput = document.getElementById('fileInput');
+  const output = document.getElementById('output');
+  const errorBox = document.getElementById('error');
+  const fileNameBox = document.getElementById('fileName');
+
+  // Initialize WASM
+  init().then(() => {
+    wasmReady = true;
+    console.log("✅ WASM module ready");
+  });
+
+  fileInput.addEventListener('change', async (e) => {
+    clearOutput(false);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      errorBox.innerText = '❌ Please upload a .json file only.';
+      return;
+    }
+
+    fileNameBox.innerText = `${file.name}`;
+    try {
+      rawJson = await file.text();
+      output.innerText = rawJson;
+      errorBox.innerText = '';
+    } catch (e) {
+      errorBox.innerText = '❌ Failed to read file.';
+    }
+  });
+
+  window.validateJson = function () {
+    if (!wasmReady) return errorBox.innerText = "⚠️ WASM not ready yet.";
+    const valid = validate_json(rawJson);
+    errorBox.innerText = valid ? "✅ Valid JSON" : "❌ Invalid JSON";
+  };
+
+  window.prettifyJson = function () {
+    if (!wasmReady) return errorBox.innerText = "⚠️ WASM not ready yet.";
+    const pretty = prettify_json(rawJson);
+    if (pretty) {
+      rawJson = pretty;
+      output.innerText = pretty;
+      errorBox.innerText = "✅ Prettified";
+      isRawView = false;
+    } else {
+      errorBox.innerText = "❌ Cannot Prettify: Invalid JSON";
+    }
+  };
+
+  window.minifyJson = function () {
+    if (!wasmReady) return errorBox.innerText = "⚠️ WASM not ready yet.";
+    const mini = minify_json(rawJson);
+    if (mini) {
+      rawJson = mini;
+      output.innerText = mini;
+      errorBox.innerText = "✅ Minified";
+      isRawView = true;
+    } else {
+      errorBox.innerText = "❌ Cannot Minify: Invalid JSON";
+    }
+  };
+
+  window.copyJson = function () {
+    navigator.clipboard.writeText(output.innerText);
+    errorBox.innerText = "📋 Copied to clipboard";
+  };
+
+  window.clearOutput = function (resetFile = true) {
+    output.innerText = '';
+    rawJson = '';
+    errorBox.innerText = '';
+    fileNameBox.innerText = '';
+    if (resetFile) fileInput.value = '';
+    isRawView = true;
+  };
+
+  window.toggleRawView = function () {
+    if (!rawJson) return;
+    if (!wasmReady) return errorBox.innerText = "⚠️ WASM not ready yet.";
+
+    const pretty = prettify_json(rawJson);
+    const mini = minify_json(rawJson);
+    if (!pretty || !mini) {
+      errorBox.innerText = "❌ Cannot toggle: Invalid JSON";
+      return;
+    }
+
+    output.innerText = isRawView ? pretty : mini;
+    isRawView = !isRawView;
+  };
+  </script>
+</body>
+</html>

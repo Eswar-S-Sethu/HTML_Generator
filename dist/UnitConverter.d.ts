@@ -3,6 +3,7 @@
 export function convert_columns(data_json: string, from_unit: string, to_unit: string, whole_num: any, roundoff: any): string;
 export function compress_image(base64_input: string, quality: number, format: string): CompressedResult;
 export function hash_file_bytes(data: Uint8Array, algo: string): string;
+export function run_regex(pattern: string, text: string, flags: string): string;
 export class CompressedResult {
   private constructor();
   free(): void;
@@ -26,6 +27,7 @@ export interface InitOutput {
   readonly compressedresult_height: (a: number) => number;
   readonly compress_image: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
   readonly hash_file_bytes: (a: number, b: number, c: number, d: number) => [number, number];
+  readonly run_regex: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
   readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Regex Tester | ToolStack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0e0f13;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .hero {
+      text-align: center;
+      padding: 70px 20px 30px;
+      background: linear-gradient(135deg, #0B0C1D, #1a1c22);
+    }
+    .regex-area, .test-area {
+      background: #1c1e26;
+      border: 1px solid #2d2f3b;
+      border-radius: 10px;
+      padding: 15px;
+      color: #00c6ff;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .toolbox {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .flag-toggle {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .flag-toggle input {
+      margin-right: 5px;
+    }
+    .highlight {
+      background-color: #333c4d;
+      color: #ffdd57;
+      font-weight: bold;
+    }
+    .group {
+      background-color: #553377;
+      color: #ffb3ff;
+      font-weight: bold;
+    }
+    .meta {
+      text-align: center;
+      color: #aaa;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    textarea {
+      width: 100%;
+      background-color: #1c1e26;
+      color: #00c6ff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      resize: vertical;
+      font-family: monospace;
+    }
+    .btn-outline-light {
+      padding: 6px 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1 class="display-5 text-white">Regex Tester</h1>
+    <p class="lead text-white-50">Test and visualize your regular expressions instantly.</p>
+  </section>
+
+  <div class="container py-4">
+    <div class="flag-toggle">
+      <label><input type="checkbox" id="flag-i" checked> Ignore Case (i)</label>
+      <label><input type="checkbox" id="flag-g" checked> Global (g)</label>
+      <label><input type="checkbox" id="flag-m"> Multiline (m)</label>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Regex Pattern</label>
+      <input type="text" id="regexInput" class="form-control" placeholder="e.g. (\w+)@\w+\.\w+" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Test String</label>
+      <textarea id="testInput" rows="6" placeholder="Paste your test text here..."></textarea>
+    </div>
+
+    <div class="toolbox">
+      <button class="btn btn-outline-light" onclick="runRegex()">Run</button>
+      <button class="btn btn-outline-light" onclick="copyResult()">Copy Result</button>
+      <button class="btn btn-outline-light" onclick="clearAll()">Clear</button>
+    </div>
+
+    <div id="resultBox" class="regex-area mt-3"></div>
+    <div id="matchMeta" class="meta"></div>
+  </div>
+
+  <script type="module">
+  import init, { run_regex } from "./UnitConverter.js";
+
+  await init();
+
+  window.runRegex = function () {
+    const pattern = document.getElementById("regexInput").value;
+    const inputText = document.getElementById("testInput").value;
+    const flags = [
+      document.getElementById("flag-i").checked ? "i" : "",
+      document.getElementById("flag-g").checked ? "g" : "",
+      document.getElementById("flag-m").checked ? "m" : ""
+    ].join("");
+
+    const resultBox = document.getElementById("resultBox");
+    const matchMeta = document.getElementById("matchMeta");
+    resultBox.innerHTML = "";
+    matchMeta.innerText = "";
+
+    let result;
+    try {
+      result = JSON.parse(run_regex(pattern, inputText, flags));
+    } catch (e) {
+      resultBox.innerHTML = `<span class="text-danger">❌ Error: ${e.message}</span>`;
+      return;
+    }
+
+    if (!result.ok) {
+      resultBox.innerHTML = `<span class="text-danger">❌ Invalid regex: ${result.error}</span>`;
+      return;
+    }
+
+    const matches = result.matches;
+    if (matches.length === 0) {
+      resultBox.innerHTML = `<span class="text-warning">No matches found.</span>`;
+      return;
+    }
+
+    let lastIndex = 0;
+    let chunks = [];
+
+    for (let m of matches) {
+      const start = m.start;
+      const end = m.end;
+
+      if (start > lastIndex) {
+        chunks.push(escapeHTML(inputText.slice(lastIndex, start)));
+      }
+
+      let matchHtml = `<span class="highlight">${escapeHTML(m.matched)}</span>`;
+      if (m.groups.length > 0) {
+        matchHtml += " ";
+        m.groups.forEach((g, i) => {
+          matchHtml += `<span class="group">[Group ${i + 1}: ${escapeHTML(g)}]</span> `;
+        });
+      }
+
+      chunks.push(matchHtml);
+      lastIndex = end;
+    }
+
+    chunks.push(escapeHTML(inputText.slice(lastIndex)));
+    resultBox.innerHTML = chunks.join("");
+    matchMeta.innerText = `🔍 Matches Found: ${matches.length}`;
+  }
+
+  function escapeHTML(text) {
+    return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  window.copyResult = function () {
+    navigator.clipboard.writeText(document.getElementById("resultBox").innerText);
+    document.getElementById("matchMeta").innerText = "📋 Copied to clipboard!";
+  }
+
+  window.clearAll = function () {
+    document.getElementById("regexInput").value = "";
+    document.getElementById("testInput").value = "";
+    document.getElementById("resultBox").innerHTML = "";
+    document.getElementById("matchMeta").innerText = "";
+  }
+ </script>
+
+
+</body>
+</html>

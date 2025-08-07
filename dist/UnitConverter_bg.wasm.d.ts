@@ -10,6 +10,7 @@ export const compressedresult_width: (a: number) => number;
 export const compressedresult_height: (a: number) => number;
 export const compress_image: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
 export const hash_file_bytes: (a: number, b: number, c: number, d: number) => [number, number];
+export const run_regex: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
 export const __wbindgen_export_0: WebAssembly.Table;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
